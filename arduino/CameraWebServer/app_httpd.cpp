@@ -172,7 +172,7 @@ static esp_err_t rfid_capture_handler(httpd_req_t *req) {
   if (!fb || fb->len == 0) {
     ESP_LOGE(TAG, "Camera capture failed");
     httpd_resp_set_type(req, "application/json");
-    httpd_resp_send(req, "{\" \":false,\"error\":\"camera_failed\"}",
+    httpd_resp_send(req, "{\"access_granted\":false,\"error\":\"camera_failed\"}",
                     HTTPD_RESP_USE_STRLEN);
     if (fb)
       esp_camera_fb_return(fb);

@@ -6,4 +6,12 @@
 #define CAMERA_WIFI_PASS    "YOUR_WIFI_PASSWORD"
 #define BACKEND_URL         "http://YOUR_BACKEND_IP:5000/verify-face"
 
+// Optional Static IP configuration (Matches ESP32CAM_IP in sketch_dec14b/config.h)
+// Set USE_STATIC_IP to 1 to enforce static IP assignment, or 0 for DHCP
+#define USE_STATIC_IP       0
+#define STATIC_IP           192, 168, 1, 150
+#define GATEWAY_IP          192, 168, 1, 1
+#define SUBNET_MASK         255, 255, 255, 0
+#define DNS_IP              192, 168, 1, 1
+
 #endif // CAMERA_CONFIG_H
