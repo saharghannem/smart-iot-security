@@ -1,0 +1,61 @@
+<div class="login-container">
+  <div class="login-split-card">
+    <!-- Form Side (Left) -->
+    <div class="form-side">
+      <div class="brand-header">
+        <div class="logo-circle">
+          <img src="logo.png" alt="Logo" class="login-logo" />
+        </div>
+        <h1>SecureGate system</h1>
+      </div>
+
+      <div class="form-header">
+        <h2>Bienvenue</h2>
+        <p>Connectez-vous pour accéder au système</p>
+      </div>
+
+      @if (errorMessage) {
+      <div class="error-alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+      }
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="admin@example.com" required>
+          <mat-icon matSuffix>alternate_email</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mot de passe</mat-label>
+          <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" required>
+          <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <div class="actions">
+          <button mat-raised-button color="primary" type="submit" class="login-button"
+            [disabled]="loginForm.invalid || isLoading">
+            @if (isLoading) {
+            <mat-icon class="spinner">hourglass_empty</mat-icon>
+            } @else {
+            <span>Se connecter</span>
+            }
+          </button>
+        </div>
+      </form>
+
+      <div class="login-footer">
+        <p>&copy; 2026 SecureGate System. Tous droits réservés.</p>
+      </div>
+    </div>
+
+    <!-- Image Side (Right) -->
+    <!-- Image Side (Right) -->
+    <div class="image-side">
+
+    </div>
+  </div>

@@ -1,0 +1,16 @@
+[
+  {
+    "origin": ["http://localhost:4200", "http://localhost:4201", "https://pfa-iot-d5516.web.app", "https://pfa-iot-d5516.firebaseapp.com"],
+    "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "Content-Length",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+      "Access-Control-Allow-Origin"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

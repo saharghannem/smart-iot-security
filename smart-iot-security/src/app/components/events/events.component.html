@@ -1,0 +1,219 @@
+<div class="events-container fade-in">
+  <div class="header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <h1 class="neu-title">Centre de Monitoring &amp; Logs</h1>
+    <div class="actions" style="display:flex; gap:8px;">
+      <button mat-stroked-button color="accent" (click)="exportToCSV()">
+        <mat-icon>table_view</mat-icon> EXPORTER CSV
+      </button>
+      <button mat-stroked-button color="primary" (click)="exportToPDF()">
+        <mat-icon>picture_as_pdf</mat-icon> EXPORTER PDF
+      </button>
+    </div>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="selectedTab">
+    <!-- Logs d'accès -->
+    <mat-tab label="HISTORIQUE DES ACCÈS">
+      <mat-card class="table-card">
+        <mat-card-content>
+          <table mat-table [dataSource]="accessLogs" class="events-table">
+            <ng-container matColumnDef="timestamp">
+              <th mat-header-cell *matHeaderCellDef>Date/Heure</th>
+              <td mat-cell *matCellDef="let log">{{ formatLogDate(log) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="username">
+              <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+              <td mat-cell *matCellDef="let log">{{ log.userName || '-' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="cardNumber">
+              <th mat-header-cell *matHeaderCellDef>Carte RFID</th>
+              <td mat-cell *matCellDef="let log">{{ log.cardNumber || log.RFIDTag || log.uid || '-' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Statut</th>
+              <td mat-cell *matCellDef="let log">
+                <mat-chip [color]="getStatusColor(log.status)">
+                  {{ getStatusLabel(log.status) }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="doorState">
+              <th mat-header-cell *matHeaderCellDef>Porte</th>
+              <td mat-cell *matCellDef="let log">
+                <mat-icon>{{ log.doorState === 'open' ? 'lock_open' : 'lock' }}</mat-icon>
+                {{ log.doorState === 'open' ? 'Ouverte' : 'Fermée' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="facialMatch">
+              <th mat-header-cell *matHeaderCellDef>Reconnaissance faciale</th>
+              <td mat-cell *matCellDef="let log">
+                @if (log.facialRecognitionMatch !== undefined || log.faceMatch !== undefined) {
+                @let match = log.facialRecognitionMatch ?? log.faceMatch;
+                <mat-icon [color]="match ? 'primary' : 'warn'">
+                  {{ match ? 'check_circle' : 'cancel' }}
+                </mat-icon>
+                } @else {
+                <span>-</span>
+                }
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let log">
+                <button mat-icon-button color="accent" (click)="viewDetail(log)" matTooltip="Voir détails">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteLog(log)" matTooltip="Supprimer ce log">
+                  <mat-icon>delete_forever</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="accessLogsColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: accessLogsColumns"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <!-- Intrusions -->
+    <mat-tab label="ALERTES INTRUSION">
+      <mat-card class="table-card glass-card">
+        <mat-card-content>
+          <table mat-table [dataSource]="intrusions" class="events-table">
+            <ng-container matColumnDef="timestamp">
+              <th mat-header-cell *matHeaderCellDef>Date/Heure</th>
+              <td mat-cell *matCellDef="let intrusion">{{ formatDate(intrusion.timestamp) }}</td>
+            </ng-container>
+
+            <!-- Nouveaux colonnes Photos et Utilisateur -->
+            <ng-container matColumnDef="photos">
+              <th mat-header-cell *matHeaderCellDef>Comparaison Visuelle</th>
+              <td mat-cell *matCellDef="let intrusion">
+                <div class="table-images-comparison" *ngIf="intrusion.imageUrl || intrusion.ownerImageUrl">
+                  <div class="img-mini-wrapper" *ngIf="intrusion.imageUrl" matTooltip="Photo capturée">
+                    <img [src]="intrusion.imageUrl" class="mini-img visitor">
+                  </div>
+                  <div class="img-mini-wrapper" *ngIf="intrusion.ownerImageUrl" matTooltip="Propriétaire de la carte">
+                    <img [src]="intrusion.ownerImageUrl" class="mini-img owner">
+                  </div>
+                </div>
+                <span *ngIf="!intrusion.imageUrl && !intrusion.ownerImageUrl">-</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="user">
+              <th mat-header-cell *matHeaderCellDef>Identité Présumée</th>
+              <td mat-cell *matCellDef="let intrusion">
+                <span [class.text-bold]="intrusion.userName">{{ intrusion.userName || 'Inconnu' }}</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="detectedBy">
+              <th mat-header-cell *matHeaderCellDef>Détecté par</th>
+              <td mat-cell *matCellDef="let intrusion">
+                @switch (intrusion.detectedBy) {
+                @case ('PIR') {
+                <mat-icon>motion_photos_on</mat-icon> PIR
+                }
+                @case ('DOOR_SENSOR') {
+                <mat-icon>sensor_door</mat-icon> Porte
+                }
+                @case ('FACIAL_RECOGNITION') {
+                <mat-icon>face</mat-icon> Visage
+                }
+                @default {
+                {{ intrusion.detectedBy }}
+                }
+                }
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="severity">
+              <th mat-header-cell *matHeaderCellDef>Sévérité</th>
+              <td mat-cell *matCellDef="let intrusion">
+                <mat-chip [color]="getSeverityColor(intrusion.severity)">
+                  {{ intrusion.severity }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="resolved">
+              <th mat-header-cell *matHeaderCellDef>Résolu</th>
+              <td mat-cell *matCellDef="let intrusion">
+                <mat-icon [color]="intrusion.resolved ? 'primary' : 'warn'">
+                  {{ intrusion.resolved ? 'check_circle' : 'error' }}
+                </mat-icon>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let intrusion">
+                <button mat-icon-button color="accent" (click)="viewDetail(intrusion)" matTooltip="Voir détails">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                @if (!intrusion.resolved) {
+                <button mat-icon-button color="primary" (click)="resolveIntrusion(intrusion)"
+                  matTooltip="Marquer comme résolu">
+                  <mat-icon>check</mat-icon>
+                </button>
+                }
+                <button mat-icon-button color="warn" (click)="deleteIntrusionLog(intrusion)" matTooltip="Supprimer cette alerte">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="intrusionsColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: intrusionsColumns"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <!-- Door Status History -->
+    <mat-tab label="ÉTAT DE LA PORTE">
+      <mat-card class="table-card glass-card">
+        <mat-card-content>
+          <table mat-table [dataSource]="doorStatuses" class="events-table">
+            <ng-container matColumnDef="timestamp">
+              <th mat-header-cell *matHeaderCellDef>Date/Heure</th>
+              <td mat-cell *matCellDef="let status">{{ status.datetime }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Statut</th>
+              <td mat-cell *matCellDef="let status">
+                <mat-chip [color]="status.status === 'closed' ? 'primary' : 'warn'">
+                  {{ status.status === 'open' ? 'Ouverte' : 'Fermée' }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="datetime">
+              <th mat-header-cell *matHeaderCellDef>Détails</th>
+              <td mat-cell *matCellDef="let status">
+                <mat-icon [color]="status.status === 'closed' ? 'primary' : 'warn'">
+                  {{ status.status === 'closed' ? 'security' : 'warning' }}
+                </mat-icon>
+                <span style="margin-left: 8px;">
+                  Mise à jour: {{ formatDate(status.timestamp) }}
+                </span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="doorStatusColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: doorStatusColumns"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+  </mat-tab-group>
+</div>

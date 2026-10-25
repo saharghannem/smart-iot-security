@@ -1,0 +1,353 @@
+<div class="dashboard-container fade-in">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Tableau de Bord</h1>
+      <p class="header-subtitle">Bienvenue chez vous. Système de sécurité opérationnel.</p>
+    </div>
+    <div class="header-actions">
+      <button mat-flat-button color="accent" (click)="exportLogs()" class="export-btn">
+        <mat-icon>assessment</mat-icon>
+        EXPORTER LOGS
+      </button>
+      <button mat-icon-button (click)="refreshData()" matTooltip="Actualiser" class="refresh-btn">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <!-- Users Stats -->
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-content">
+          <div class="stat-icon-wrapper">
+            <mat-icon>people</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Utilisateurs</div>
+            <div class="stat-value">{{ (totalUsers$ | async) || 0 }}</div>
+            <p class="stat-desc">Personnes enregistrées dans la base.</p>
+            <div class="stat-trend success">
+              <mat-icon class="small-icon">verified_user</mat-icon>
+              <span>Accès Autorisés</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Cards Stats -->
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-content">
+          <div class="stat-icon-wrapper">
+            <mat-icon>credit_card</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Cartes RFID active</div>
+            <div class="stat-value">{{ (totalCards$ | async) || 0 }}</div>
+            <p class="stat-desc">Badges physiques en circulation.</p>
+            <div class="stat-trend success">
+              <mat-icon class="small-icon">check_circle</mat-icon>
+              <span>Système Actif</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Access Stats -->
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-content">
+          <div class="stat-icon-wrapper">
+            <mat-icon>sensor_door</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Activités (24h)</div>
+            <div class="stat-value">{{ (accessToday$ | async) || 0 }}</div>
+            <p class="stat-desc">Total des passages (autorisés & refusés).</p>
+            <div class="stat-trend info">
+              <mat-icon class="small-icon">history</mat-icon>
+              <span>Flux journalier</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Intrusions Stats -->
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-content">
+          <div class="stat-icon-wrapper">
+            <mat-icon>gpp_maybe</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Alertes Critiques</div>
+            <div class="stat-value">{{ (intrusionsToday$ | async) || 0 }}</div>
+            <p class="stat-desc">Intrusions & visages inconnus non résolus.</p>
+            <div class="stat-trend error">
+              <mat-icon class="small-icon">report_problem</mat-icon>
+              <span>Sécurité active</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Rejection Rate -->
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-content">
+          @if (rejectionRate$ | async; as rate) {
+          <div class="stat-icon-wrapper orange">
+            <mat-icon>block</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Taux de Rejet</div>
+            <div class="stat-value">{{ rate }}%</div>
+            <p class="stat-desc">% de tentatives d'accès refusées aujourd'hui.</p>
+            <div class="stat-trend" [class.success]="rate === 0" [class.warn]="rate > 0">
+              <mat-icon class="small-icon">{{ rate === 0 ? 'verified' : 'warning' }}</mat-icon>
+              <span>Efficacité firewall</span>
+            </div>
+          </div>
+          } @else {
+          <div class="stat-icon-wrapper orange">
+            <mat-icon>block</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Taux de Rejet</div>
+            <div class="stat-value">0%</div>
+            <p class="stat-desc">Calcul du taux de refus...</p>
+          </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Most Active User -->
+    <mat-card class="stat-card active-user-premium">
+      <mat-card-content>
+        <div class="stat-content">
+          <div class="stat-icon-wrapper blue">
+            <mat-icon>leaderboard</mat-icon>
+          </div>
+          <div class="stat-info full-width">
+            <div class="stat-label">Utilisateur le plus actif</div>
+            @if (mostActiveUser$ | async; as mostActive) {
+            <div class="user-badge-premium mt-10">
+                <div class="user-avatar-mini">
+                    <img *ngIf="mostActive.photo" [src]="mostActive.photo" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">
+                    <mat-icon *ngIf="!mostActive.photo">account_circle</mat-icon>
+                </div>
+                <div class="user-details-mini">
+                    <div class="stat-value small">{{ mostActive.name }}</div>
+                    <p class="stat-desc">Fréquentation la plus élevée.</p>
+                </div>
+            </div>
+            <div class="stat-trend success premium-trend mt-12">
+              <mat-icon class="small-icon">trending_up</mat-icon>
+              <span>{{ mostActive.count }} Passages enregistrés</span>
+            </div>
+            } @else {
+            <div class="stat-value">...</div>
+            <p class="stat-desc">Calcul en cours...</p>
+            }
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Door Status & Control Panel -->
+    <mat-card class="stat-card door-control-card">
+      <mat-card-content style="display: flex; flex-direction: column; height: 100%;">
+        <div class="stat-content" style="margin-bottom: auto; flex: 1;">
+          @if (doorStatus$ | async; as status) {
+          <div class="stat-icon-wrapper" [style.color]="status.status === 'open' ? '#ef4444' : '#22c55e'">
+            <mat-icon>{{ status.status === 'open' ? 'lock_open' : 'lock' }}</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Contrôle d'Accès</div>
+            <div class="stat-value" [style.color]="status.status === 'open' ? '#ef4444' : '#22c55e'">
+              {{ status.status === 'open' ? 'PORTE OUVERTE' : 'PORTE VERROUILLÉE' }}
+            </div>
+            <div class="stat-trend" [ngClass]="status.status === 'closed' ? 'success' : 'error'">
+              <mat-icon class="small-icon">
+                {{ status.status === 'closed' ? 'security' : 'warning' }}
+              </mat-icon>
+              <span>{{ status.datetime || 'Système actif' }}</span>
+            </div>
+          </div>
+          } @else {
+          <div class="stat-icon-wrapper">
+            <mat-icon>lock</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">Contrôle d'Accès</div>
+            <div class="stat-value">CHARGEMENT...</div>
+            <div class="stat-trend">
+              <mat-icon class="small-icon">sync</mat-icon>
+              <span>Connexion en cours</span>
+            </div>
+          </div>
+          }
+        </div>
+        
+        <!-- Large Action Buttons -->
+        <div class="door-controls-container" style="display: flex; gap: 8px; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+          <button mat-flat-button color="primary" style="flex: 1; border-radius: 8px; font-weight: 600;" (click)="triggerDoorAction('OPEN')" matTooltip="Déverrouiller la porte">
+            <mat-icon style="margin-right: 4px;">lock_open</mat-icon>
+            Ouvrir
+          </button>
+          <button mat-stroked-button color="warn" style="flex: 1; border-radius: 8px; font-weight: 600;" (click)="triggerDoorAction('CLOSE')" matTooltip="Verrouiller la porte">
+            <mat-icon style="margin-right: 4px;">lock</mat-icon>
+            Fermer
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Recent Alerts Feed -->
+  <div class="section-title">Alertes de Sécurité Récentes</div>
+  <div class="alerts-feed">
+    @for (alert of (recentAlerts$ | async); track alert.id) {
+    <mat-card class="alert-feed-card" [class.unread]="!alert.resolved">
+      <mat-card-content>
+        <div class="alert-feed-content">
+          <div class="feed-images" *ngIf="alert.imageUrl || alert.ownerImageUrl">
+            <div class="feed-img-wrapper" *ngIf="alert.imageUrl">
+              <img [src]="alert.imageUrl" alt="Visiteur">
+              <span class="img-type">Capture</span>
+            </div>
+            <div class="feed-img-wrapper" *ngIf="alert.ownerImageUrl">
+              <img [src]="alert.ownerImageUrl" alt="Badge">
+              <span class="img-type">Badge</span>
+            </div>
+          </div>
+          <div class="feed-text">
+            <div class="feed-header">
+              <mat-icon color="warn">{{ alert.source === 'security_alert' ? 'face' : 'notification_important'
+                }}</mat-icon>
+              <span class="feed-title">{{ alert.type?.replace('_', ' ') || 'Intrusion détectée' }}</span>
+              <span class="feed-time">{{ alert.timestamp?.toDate ? (alert.timestamp.toDate() | date:'shortTime') :
+                (alert.timestamp | date:'shortTime') }}</span>
+            </div>
+            <p class="feed-msg">
+              Identité: <strong>{{ alert.userName || 'Inconnu' }}</strong>
+            </p>
+            <div class="feed-footer">
+              <span class="date">{{ alert.timestamp?.toDate ? (alert.timestamp.toDate() | date:'dd/MM HH:mm') :
+                (alert.timestamp | date:'dd/MM HH:mm') }}</span>
+              <span class="status" [class.resolved]="alert.resolved">{{ alert.resolved ? 'Résolu' : 'En attente'
+                }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    } @empty {
+    <div class="no-alerts-placeholder fade-in">
+      <mat-icon>check_circle_outline</mat-icon>
+      <p>Aucune alerte de sécurité récente. Le système est protégé.</p>
+    </div>
+    }
+  </div>
+
+  <!-- Door Access History Table -->
+  <div class="section-title">Historique des Accès & État du Port</div>
+  <mat-card class="history-card">
+    <mat-card-content>
+      <div class="history-table-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Méthode</th>
+              <th>Statut</th>
+              <th>Date & Heure</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (log of (doorAccessLogs$ | async); track log.id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                   <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: #e0e7ff; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                    <img *ngIf="log.userPhoto" [src]="log.userPhoto" style="width:100%; height:100%; object-fit:cover;">
+                    <mat-icon *ngIf="!log.userPhoto" style="color: #94a3b8; font-size: 20px; width: 20px; height: 20px;">account_circle</mat-icon>
+                  </div>
+                  <span>{{ log.user_name || log.userName || 'Inconnu' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="method-tag">{{ (log.method === 'facial_recognition' ? 'Visage' : log.method) || 'RFID' }}</span>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="log.status || 'denied'">
+                  {{ (log.status === 'granted' || log.status === 'authorized' || log.status === 'success') ? 'AUTORISÉ' : 'REFUSÉ' }}
+                </span>
+              </td>
+              <td class="time-cell">
+                {{ log.datetime || (log.timestamp | date:'short') }}
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="4" class="empty-table">Aucun passage enregistré aujourd'hui.</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (isBrowser) {
+  <div class="section-title">Analyse Visuelle du Système</div>
+  <div class="analysis-grid">
+    <!-- Chart Section -->
+    <mat-card class="chart-card activity-chart">
+      <mat-card-header>
+        <div class="chart-header-title">
+          <mat-card-title>Historique d'Activités</mat-card-title>
+          <mat-card-subtitle>Suivi des passages sécurisés aujourd'hui</mat-card-subtitle>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-wrapper">
+          <canvas baseChart [data]="accessChartData" [options]="accessChartOptions" [type]="accessChartType"></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Pie/Doughnut Analysis -->
+    <div class="pie-analysis">
+      <mat-card class="chart-card mini-chart">
+        <mat-card-header>
+          <mat-card-title>Alertes par Source</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container-mini">
+            <canvas baseChart [data]="alertTypeData" [options]="commonPieOptions" [type]="pieChartType"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart-card mini-chart">
+        <mat-card-header>
+          <mat-card-title>Taux de Réussite</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container-mini">
+            <canvas baseChart [data]="accessSuccessData" [options]="commonPieOptions" [type]="pieAccessType"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+  }
+</div>

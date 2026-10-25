@@ -1,0 +1,149 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="side" [opened]="sidenavOpened" class="sidenav">
+    <div class="sidenav-content-wrapper">
+      <div class="sidenav-header">
+        <div class="logo-container">
+          <img src="logo1.png" alt="Logo" class="logo-icon" />
+          <h2 class="brand-name">SecureGate </h2>
+        </div>
+      </div>
+
+      <mat-nav-list class="nav-list">
+        @for (item of menuItems; track item.route) {
+        <a mat-list-item [routerLink]="item.route" routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }" class="nav-item">
+          <mat-icon matListItemIcon class="nav-icon">{{ item.icon }}</mat-icon>
+          <span matListItemTitle class="nav-label">{{ item.label }}</span>
+        </a>
+        }
+      </mat-nav-list>
+
+      <div class="sidenav-footer">
+        <a mat-list-item (click)="logout()" class="nav-item logout-item">
+          <mat-icon matListItemIcon class="nav-icon">power_settings_new</mat-icon>
+          <span matListItemTitle class="nav-label">Logout</span>
+        </a>
+      </div>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content [class.dark-mode]="isDarkMode">
+    <div class="emergency-banner" *ngIf="isEmergencyMode">
+      <mat-icon>warning</mat-icon>
+      🚨 SYSTÈME EN MODE URGENCE - TOUS LES ACCÈS SONT BLOQUÉS 🚨
+      <mat-icon>warning</mat-icon>
+    </div>
+    <mat-toolbar class="main-toolbar" [class.emergency-active]="isEmergencyMode">
+      <button mat-icon-button (click)="sidenavOpened = !sidenavOpened" class="menu-toggle-btn neu-button">
+        <mat-icon>{{ sidenavOpened ? 'chevron_left' : 'menu' }}</mat-icon>
+      </button>
+
+      <div class="toolbar-title" *ngIf="sidenavOpened === false">
+        <img src="logo.png" alt="Logo" class="logo-icon" />
+        <h2 class="brand-name dark">SecureGate </h2>
+      </div>
+
+      <span class="spacer"></span>
+
+      <!-- Global Search -->
+      <div class="global-search">
+        <mat-form-field appearance="outline" class="search-form-field">
+          <mat-label>Recherche globale</mat-label>
+          <input type="text" placeholder="Chercher un user/matricule..." matInput [formControl]="globalSearchControl"
+            [matAutocomplete]="auto">
+          <mat-icon matPrefix>search</mat-icon>
+          <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onUserSelected($event)">
+            <mat-option *ngFor="let user of searchResults$ | async" [value]="user">
+              <div class="search-option">
+                <img [src]="user.photoUrl || user.imageURL || 'assets/default-avatar.png'" class="search-avatar">
+                <div class="search-info">
+                  <span class="search-name">{{ user.nom }} {{ user.prenom }}</span>
+                  <span class="search-sub">{{ user.matricule }} | {{ user.poste || 'Utilisateur' }}</span>
+                </div>
+              </div>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+
+      <div class="toolbar-actions">
+        <!-- Emergency Toggle -->
+        <button mat-mini-fab [color]="isEmergencyMode ? 'warn' : 'primary'" [class.neu-button-red]="isEmergencyMode"
+          (click)="toggleEmergencyMode()" matTooltip="Mode Urgence" class="emergency-toggle">
+          <mat-icon>{{ isEmergencyMode ? 'warning' : 'security' }}</mat-icon>
+        </button>
+
+        <!-- Dark Mode Toggle -->
+        <button mat-icon-button (click)="toggleDarkMode()" class="action-button neu-button" matTooltip="Thème">
+          <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
+
+        <button mat-icon-button [matBadge]="unreadNotifications > 0 ? unreadNotifications : null"
+          [matBadgeColor]="'warn'" [matMenuTriggerFor]="notificationsMenu" class="action-button neu-button"
+          matTooltip="Notifications">
+          <mat-icon>notifications</mat-icon>
+        </button>
+
+        <mat-menu #notificationsMenu="matMenu" class="notifications-menu neumorphic-menu">
+          <!-- Notification list as before -->
+          <div class="notifications-header">
+            <h3>Notifications</h3>
+          </div>
+          <div class="notifications-list">
+            @if (notifications.length === 0) {
+            <div class="no-notifications">
+              <p>Aucune notification</p>
+            </div>
+            } @else {
+            @for (notification of notifications.slice(0, 10); track notification.id) {
+            <div mat-menu-item class="notification-item-rich" (click)="markNotificationAsRead(notification)">
+              <div class="notif-images" *ngIf="notification.imageUrl || notification.ownerImageUrl">
+                <div class="notif-img-wrapper" *ngIf="notification.imageUrl">
+                  <img [src]="notification.imageUrl" class="captured-img" alt="Visiteur">
+                  <span class="img-label">Capture</span>
+                </div>
+                <div class="notif-img-wrapper" *ngIf="notification.ownerImageUrl">
+                  <img [src]="notification.ownerImageUrl" class="owner-img" alt="Propriétaire">
+                  <span class="img-label">Propriétaire</span>
+                </div>
+              </div>
+              <div class="notif-text-content">
+                <div class="notif-title-row">
+                  <mat-icon [class.unread]="!notification.read">{{ getNotificationIcon(notification.type) }}</mat-icon>
+                  <span class="notif-title">{{ notification.title }}</span>
+                  <span class="notif-time">{{ formatTime(notification.timestamp) }}</span>
+                </div>
+                <p class="notif-msg">{{ notification.message }}</p>
+                <p class="notif-owner" *ngIf="notification.ownerName">
+                  Utilisateur: <strong>{{ notification.ownerName }}</strong>
+                </p>
+              </div>
+            </div>
+            }
+            }
+          </div>
+        </mat-menu>
+
+        <div class="user-profile-v2" [matMenuTriggerFor]="userMenu">
+          <div class="user-info-text">
+            <span class="user-name-text">Admin</span>
+          </div>
+          <img src="admin_avatar.png" alt="Profile" class="user-avatar-v2">
+        </div>
+
+        <mat-menu #userMenu="matMenu" class="user-menu neumorphic-menu">
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Déconnexion</span>
+          </button>
+        </mat-menu>
+      </div>
+    </mat-toolbar>
+
+    <main class="main-content">
+      <div class="content-card neu-content-card">
+        <router-outlet />
+      </div>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

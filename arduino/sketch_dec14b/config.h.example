@@ -1,0 +1,16 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// Configuration template - Copy to config.h and fill in your credentials
+#define WIFI_SSID           "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD       "YOUR_WIFI_PASSWORD"
+#define BACKEND_IP          "YOUR_BACKEND_IP"
+#define ESP32CAM_IP         "YOUR_ESP32CAM_IP"
+
+// Firebase Configuration
+#define FIREBASE_PROJECT_ID "your-firebase-project-id"
+#define FIREBASE_API_KEY    "YOUR_FIREBASE_WEB_API_KEY"
+#define FIREBASE_USER_EMAIL "your_user@example.com"
+#define FIREBASE_USER_PASSWORD "your_password"
+
+#endif // CONFIG_H

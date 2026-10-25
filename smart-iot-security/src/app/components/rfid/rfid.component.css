@@ -1,0 +1,154 @@
+.rfid-container {
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.header h1 {
+  font-size: 2.2rem;
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.form-card {
+  margin-bottom: 2.5rem;
+  padding: 32px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface) !important;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.table-card {
+  padding: 0;
+  background: var(--bg-surface) !important;
+  overflow: hidden;
+}
+
+.rfid-table {
+  width: 100%;
+}
+
+.rfid-table.hidden {
+  display: none;
+}
+
+.no-data {
+  padding: 5rem 2rem;
+  text-align: center;
+  color: var(--text-tertiary);
+}
+
+.no-data mat-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.no-data p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.no-data .hint {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  margin-top: 16px;
+}
+
+.hint-list {
+  text-align: left;
+  display: inline-block;
+  margin: 12px 0;
+  padding-left: 24px;
+  color: #757575;
+  font-size: 13px;
+}
+
+.hint-list li {
+  margin: 8px 0;
+}
+
+.search-header {
+  padding: 1.5rem 1.5rem 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.search-field {
+  width: 400px;
+  max-width: 100%;
+}
+
+.cards-count {
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cards-count mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.table-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 16px;
+}
+
+.rfid-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: #666;
+}
+
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1rem;
+  color: var(--text-secondary);
+}
+
+.rfid-table tr:hover {
+  background-color: var(--bg-surface-hover);
+}

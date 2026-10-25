@@ -1,0 +1,283 @@
+<div class="users-container fade-in">
+  <div class="header">
+    <h1>Gestion des Utilisateurs</h1>
+    <div class="actions">
+      <button mat-stroked-button color="accent" (click)="exportToCSV()" style="margin-right: 8px;">
+        <mat-icon>table_view</mat-icon>
+        EXPORTER CSV
+      </button>
+      <button mat-stroked-button color="primary" (click)="exportToPDF()" style="margin-right: 15px;">
+        <mat-icon>picture_as_pdf</mat-icon>
+        EXPORTER PDF
+      </button>
+      <button mat-flat-button color="primary" (click)="showForm = !showForm">
+        <mat-icon>{{ showForm ? 'close' : 'add' }}</mat-icon>
+        {{ showForm ? 'FERMER LE FORMULAIRE' : 'NOUVEL UTILISATEUR' }}
+      </button>
+    </div>
+  </div>
+
+  @if (showForm) {
+  <mat-card class="form-card glass-card">
+    <mat-card-header>
+      <mat-card-title>{{ editingUserId ? 'Édition du Profil' : 'Nouveau Profil Sécurisé' }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+
+        <!-- Matricule Row -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Matricule</mat-label>
+          <input matInput formControlName="matricule" required placeholder="Ex: M12345">
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="nom" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Prénom</mat-label>
+            <input matInput formControlName="prenom" required>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Poste / Fonction</mat-label>
+          <input matInput formControlName="poste" required placeholder="Ex: Stagiaire, Développeur, RH...">
+        </mat-form-field>
+
+        <div class="row-verification" style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+          <mat-form-field appearance="outline" style="flex: 1; margin-bottom: 0;">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email" required>
+          </mat-form-field>
+          @if (!editingUserId) {
+            <button mat-flat-button color="accent" type="button" 
+                    [disabled]="userForm.get('email')?.invalid || isOtpSent || isEmailVerified"
+                    (click)="sendVerificationCode()">
+              {{ isEmailVerified ? 'Vérifié' : (isOtpSent ? 'Code envoyé' : 'Vérifier') }}
+            </button>
+          }
+        </div>
+
+        @if (!editingUserId && isOtpSent && !isEmailVerified) {
+        <div class="row-verification" style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+          <mat-form-field appearance="outline" style="flex: 1; margin-bottom: 0;">
+            <mat-label>Code de vérification</mat-label>
+            <input matInput type="text" [(ngModel)]="enteredOtpCode" [ngModelOptions]="{standalone: true}" (keyup)="checkOtpCode()" placeholder="Saisir les 6 chiffres">
+          </mat-form-field>
+        </div>
+        }
+
+        @if (!editingUserId && isEmailVerified) {
+          <div class="success-alert" style="color: green; margin-bottom: 20px; display: flex; align-items: center; gap: 5px;">
+            <mat-icon>check_circle</mat-icon> Email vérifié avec succès !
+          </div>
+        }
+
+        <!-- Access Control Section -->
+        <h3 class="subsection-title">Contrôle d'accès RFID</h3>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Carte RFID</mat-label>
+          <mat-select formControlName="rfidCardId">
+            <mat-option value="">Aucune</mat-option>
+            @if (rfidCards$ | async; as cards) {
+            @for (card of cards; track card.id) {
+            <mat-option [value]="card.id">{{ card.cardNumber }}</mat-option>
+            }
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Période d'activation</mat-label>
+            <mat-date-range-input [rangePicker]="picker">
+              <input matStartDate formControlName="accessStartDate" placeholder="Date de début">
+              <input matEndDate formControlName="accessEndDate" placeholder="Date de fin">
+            </mat-date-range-input>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker></mat-date-range-picker>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row time-inputs">
+          <div class="time-group">
+            <span class="time-label">Heure Début</span>
+            <div class="time-selectors">
+              <mat-form-field appearance="outline" class="time-select">
+                <mat-label>HH</mat-label>
+                <mat-select formControlName="startHour">
+                  <mat-option value="">--</mat-option>
+                  @for (h of hours; track h) {
+                  <mat-option [value]="h">{{ h }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <span class="separator">:</span>
+              <mat-form-field appearance="outline" class="time-select">
+                <mat-label>MM</mat-label>
+                <mat-select formControlName="startMinute">
+                  <mat-option value="">--</mat-option>
+                  @for (m of minutes; track m) {
+                  <mat-option [value]="m">{{ m }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div class="time-group">
+            <span class="time-label">Heure Fin</span>
+            <div class="time-selectors">
+              <mat-form-field appearance="outline" class="time-select">
+                <mat-label>HH</mat-label>
+                <mat-select formControlName="endHour">
+                  <mat-option value="">--</mat-option>
+                  @for (h of hours; track h) {
+                  <mat-option [value]="h">{{ h }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <span class="separator">:</span>
+              <mat-form-field appearance="outline" class="time-select">
+                <mat-label>MM</mat-label>
+                <mat-select formControlName="endMinute">
+                  <mat-option value="">--</mat-option>
+                  @for (m of minutes; track m) {
+                  <mat-option [value]="m">{{ m }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+
+        <div class="photo-upload">
+          <label class="upload-label" [class.has-file]="selectedFile">
+            <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden>
+            <mat-icon>{{ selectedFile ? 'check_circle' : 'camera_alt' }}</mat-icon>
+            <span>{{ selectedFile ? 'Photo sélectionnée' : (editingUserId ? 'Changer la photo' : 'Ajouter une photo')
+              }}</span>
+            @if (selectedFile) {
+            <span class="file-name">{{ selectedFile.name }}</span>
+            }
+          </label>
+          @if (previewUrl) {
+          <div class="preview-container">
+            <img [src]="previewUrl" alt="Preview" class="preview-image">
+            <button mat-icon-button class="remove-photo" (click)="removePhoto()" matTooltip="Supprimer la photo">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          } @else if (editingUserId) {
+          <p class="photo-hint">Aucune photo sélectionnée. La photo actuelle sera conservée.</p>
+          } @else {
+          <p class="photo-hint" style="color: #f44336; font-weight: bold;">La photo est obligatoire pour créer le profil.</p>
+          }
+        </div>
+
+        @if (!editingUserId) {
+          <div style="margin-top: 20px; margin-bottom: 20px; display: flex; justify-content: flex-end;">
+            <re-captcha (resolved)="onRecaptchaResolved($event)" [siteKey]="recaptchaSiteKey"></re-captcha>
+          </div>
+        }
+
+        <div class="form-actions">
+          <button mat-button type="button" (click)="resetForm()">Annuler</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="userForm.invalid">
+            {{ editingUserId ? 'Modifier' : 'Créer' }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  }
+
+  <mat-card class="table-card glass-card">
+    <mat-card-header>
+      <div class="search-header">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Rechercher un utilisateur</mat-label>
+          <input matInput [formControl]="searchControl" placeholder="Nom, matricule, email...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+    </mat-card-header>
+    <mat-card-content>
+      @if (users$ | async; as users) {
+      @if (users.length === 0) {
+      <div class="no-data">
+        <mat-icon>people_outline</mat-icon>
+        <p>Aucun utilisateur trouvé</p>
+        <p class="hint">Vérifiez la connexion ou créez un nouvel utilisateur.</p>
+      </div>
+      } @else {
+      <div class="users-count">
+        <mat-icon>info</mat-icon>
+        <span>{{ users.length }} utilisateur(s) trouvé(s)</span>
+      </div>
+      <table mat-table [dataSource]="users" class="users-table">
+
+        <ng-container matColumnDef="matricule">
+          <th mat-header-cell *matHeaderCellDef>Matricule</th>
+          <td mat-cell *matCellDef="let user">{{ user.matricule || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Nom complet</th>
+          <td mat-cell *matCellDef="let user">{{ getUserFullName(user) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="card">
+          <th mat-header-cell *matHeaderCellDef>Carte RFID</th>
+          <td mat-cell *matCellDef="let user">{{ user.cardNumber }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="photo">
+          <th mat-header-cell *matHeaderCellDef>Photo</th>
+          <td mat-cell *matCellDef="let user">
+            @if (user.photoUrl || user.imageURL) {
+            <img [src]="user.photoUrl || user.imageURL" alt="Photo" class="user-photo">
+            } @else {
+            <mat-icon>person</mat-icon>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let user">
+            <button mat-icon-button color="accent" (click)="viewUser(user)" matTooltip="Voir détails">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="primary" (click)="editUser(user)" matTooltip="Modifier">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteUser(user)" matTooltip="Supprimer">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+      }
+      } @else {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Chargement des utilisateurs...</p>
+      </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

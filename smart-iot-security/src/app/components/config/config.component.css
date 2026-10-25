@@ -1,0 +1,131 @@
+.config-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.header {
+  margin-bottom: 3rem;
+}
+
+.header h1 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.config-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.config-card mat-card-header {
+  margin-bottom: 1.5rem;
+}
+
+.config-card mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem !important;
+  color: var(--primary-color) !important;
+}
+
+.config-card mat-card-title mat-icon {
+  font-size: 24px;
+}
+
+.config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.config-item label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.value-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-align: right;
+  margin-top: -10px;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+.time-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 2rem;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem;
+  gap: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.loading mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  animation: rotate 2s linear infinite;
+}
+
+/* Slider Overrides */
+::ng-deep .mat-mdc-slider {
+  --mdc-slider-active-track-color: var(--primary-color) !important;
+  --mdc-slider-handle-color: var(--primary-color) !important;
+  --mdc-slider-hover-handle-color: var(--primary-color) !important;
+  --mdc-slider-focus-handle-color: var(--primary-color) !important;
+}
+
+/* Slide Toggle Overrides */
+::ng-deep .mat-mdc-slide-toggle.mat-primary {
+  --mdc-switch-selected-focus-state-layer-color: var(--primary-color) !important;
+  --mdc-switch-selected-handle-color: var(--primary-color) !important;
+  --mdc-switch-selected-hover-state-layer-color: var(--primary-color) !important;
+  --mdc-switch-selected-pressed-state-layer-color: var(--primary-color) !important;
+  --mdc-switch-selected-track-color: rgba(0, 212, 255, 0.3) !important;
+}

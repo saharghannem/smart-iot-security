@@ -1,0 +1,12 @@
+# Angular & Node dependencies
+node_modules/
+.angular/
+dist/
+*.log
+.npm/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

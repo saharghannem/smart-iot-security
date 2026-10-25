@@ -1,0 +1,85 @@
+<div class="images-page-container animate__animated animate__fadeIn">
+  <header class="page-header">
+    <div class="header-titles">
+      <h1>Galerie de Surveillance</h1>
+      <p class="subtitle">Archives visuelles des détections et accès biométriques</p>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="clearFilters()" matTooltip="Réinitialiser les filtres" class="refresh-btn">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- SCANNER FILTERS -->
+  <div class="filters-bar glass-panel animate__animated animate__fadeInDown">
+    <div class="filter-group">
+      <mat-icon class="filter-icon">event</mat-icon>
+      <mat-form-field appearance="outline" class="date-picker">
+        <mat-label>Filtrer par date</mat-label>
+        <input matInput [matDatepicker]="picker" [formControl]="dateFilter">
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div class="filter-group">
+      <mat-icon class="filter-icon">category</mat-icon>
+      <mat-form-field appearance="outline" class="type-select">
+        <mat-label>Source de l'image</mat-label>
+        <mat-select [formControl]="typeFilter">
+          <mat-option value="">Toutes les sources</mat-option>
+          <mat-option [value]="ImageType.ACCESS_LOG">Accès autorisé (NFC)</mat-option>
+          <mat-option [value]="ImageType.INTRUSION">Alerte Intrusion (PIR)</mat-option>
+          <mat-option [value]="ImageType.FACE_RECOGNITION">Face-ID Match</mat-option>
+          <mat-option [value]="ImageType.ESP32_CAM">Caméra Live ESP32</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="filter-stats" *ngIf="images.length > 0">
+      <span class="count">{{ filteredImages.length }}</span> / {{ images.length }} captures
+    </div>
+  </div>
+
+  <!-- GALLERY GRID -->
+  @if (filteredImages.length === 0) {
+    <div class="empty-gallery glass-panel animate__animated animate__zoomIn">
+      <mat-icon>no_photography</mat-icon>
+      <p>Aucune preuve visuelle trouvée pour ces critères.</p>
+      <button mat-button color="primary" (click)="clearFilters()">RECHARGER LA GALERIE</button>
+    </div>
+  } @else {
+    <div class="images-grid">
+      @for (image of filteredImages; track image.id) {
+        <div class="evidence-card glass-panel animate__animated animate__fadeInUp" style="--delay: 0.1s">
+          <div class="image-viewport" (click)="viewImage(image.url)">
+            <img [src]="image.url" [alt]="getTypeLabel(image.type)" loading="lazy">
+            <div class="hover-overlay">
+              <div class="zoom-circle">
+                <mat-icon>fullscreen</mat-icon>
+              </div>
+            </div>
+          </div>
+          <div class="evidence-details">
+            <div class="e-header">
+              <span class="type-pill" [ngClass]="image.type">{{ getTypeLabel(image.type) }}</span>
+              <div class="e-actions" style="display:flex; gap: 4px;">
+                <button mat-icon-button class="dl-btn" (click)="$event.stopPropagation(); viewImage(image.url)">
+                  <mat-icon>open_in_new</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" class="del-btn" (click)="$event.stopPropagation(); deleteImage(image)" matTooltip="Supprimer">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+            <div class="e-footer">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ formatDate(image.timestamp) }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
